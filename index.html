@@ -629,7 +629,9 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
     ctx.clearRect(0,0,size,fullH);
 
     var cell = size/total;
-    var radiusFactor = opts.style==='square' ? 0 : (opts.style==='dots' ? 0.5 : 0.32);
+    var isSquare = opts.style==='square';
+    var radiusFactor = isSquare ? 0 : (opts.style==='dots' ? 0.5 : 0.32);
+    var eyeRadiusFactor = isSquare ? 0 : (opts.style==='dots' ? 0.5 : 0.35);
 
     var darkFill = opts.fg;
     if (opts.gradient){
@@ -641,7 +643,7 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
 
     // background (covers QR area + label strip so corners match)
     ctx.fillStyle = opts.bg;
-    roundRectPath(ctx,0,0,size,fullH, cell*1.1);
+    roundRectPath(ctx,0,0,size,fullH, isSquare ? 0 : cell*1.1);
     ctx.fill();
 
     // modules
@@ -650,7 +652,7 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
       for (var c=0;c<n;c++){
         if (!matrix[r][c] || isFinderZone(r,c,n)) continue;
         var x=(c+QUIET)*cell, y=(r+QUIET)*cell;
-        var pad = cell*0.06, s = cell*0.88;
+        var pad = isSquare ? 0 : cell*0.06, s = isSquare ? cell : cell*0.88;
         roundRectPath(ctx, x+pad, y+pad, s, s, s/2*radiusFactor);
         ctx.fill();
       }
@@ -662,11 +664,11 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
       var r0=p[0], c0=p[1];
       var x=(c0+QUIET)*cell, y=(r0+QUIET)*cell, s=7*cell;
       ctx.fillStyle = darkFill;
-      roundRectPath(ctx,x,y,s,s, s*0.26); ctx.fill();
+      roundRectPath(ctx,x,y,s,s, s*0.26*eyeRadiusFactor); ctx.fill();
       ctx.fillStyle = opts.bg;
-      roundRectPath(ctx,x+cell,y+cell,s-2*cell,s-2*cell,(s-2*cell)*0.22); ctx.fill();
+      roundRectPath(ctx,x+cell,y+cell,s-2*cell,s-2*cell,(s-2*cell)*0.22*eyeRadiusFactor); ctx.fill();
       ctx.fillStyle = darkFill;
-      roundRectPath(ctx,x+2*cell,y+2*cell,s-4*cell,s-4*cell,(s-4*cell)*0.32); ctx.fill();
+      roundRectPath(ctx,x+2*cell,y+2*cell,s-4*cell,s-4*cell,(s-4*cell)*0.32*eyeRadiusFactor); ctx.fill();
     });
 
     // logo
@@ -700,7 +702,9 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
     var total = n + QUIET*2;
     var labelUnits = opts.frame === 'tag' ? total*0.16 : 0;
     var fullUnits = total + labelUnits;
-    var radiusFactor = opts.style==='square' ? 0 : (opts.style==='dots' ? 0.5 : 0.32);
+    var isSquare = opts.style==='square';
+    var radiusFactor = isSquare ? 0 : (opts.style==='dots' ? 0.5 : 0.32);
+    var eyeRadiusFactor = isSquare ? 0 : (opts.style==='dots' ? 0.5 : 0.35);
 
     var defs = '';
     var fillRef = opts.fg;
@@ -711,21 +715,22 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
     }
 
     var shapes = '';
+    var modPad = isSquare ? 0 : 0.06, modSize = isSquare ? 1 : 0.88;
     for (var r=0;r<n;r++){
       for (var c=0;c<n;c++){
         if (!matrix[r][c] || isFinderZone(r,c,n)) continue;
         var x=c+QUIET, y=r+QUIET;
-        var rad = (0.88/2*radiusFactor).toFixed(3);
-        shapes += '<rect x="'+(x+0.06).toFixed(3)+'" y="'+(y+0.06).toFixed(3)+'" width="0.88" height="0.88" rx="'+rad+'" fill="'+fillRef+'"/>';
+        var rad = (modSize/2*radiusFactor).toFixed(3);
+        shapes += '<rect x="'+(x+modPad).toFixed(3)+'" y="'+(y+modPad).toFixed(3)+'" width="'+modSize+'" height="'+modSize+'" rx="'+rad+'" fill="'+fillRef+'"/>';
       }
     }
     var eyes = [[0,0],[0,n-7],[n-7,0]];
     eyes.forEach(function(p){
       var r0=p[0], c0=p[1], s=7;
       var x=c0+QUIET, y=r0+QUIET;
-      shapes += '<rect x="'+x+'" y="'+y+'" width="'+s+'" height="'+s+'" rx="'+(s*0.26).toFixed(3)+'" fill="'+fillRef+'"/>';
-      shapes += '<rect x="'+(x+1)+'" y="'+(y+1)+'" width="'+(s-2)+'" height="'+(s-2)+'" rx="'+((s-2)*0.22).toFixed(3)+'" fill="'+opts.bg+'"/>';
-      shapes += '<rect x="'+(x+2)+'" y="'+(y+2)+'" width="'+(s-4)+'" height="'+(s-4)+'" rx="'+((s-4)*0.32).toFixed(3)+'" fill="'+fillRef+'"/>';
+      shapes += '<rect x="'+x+'" y="'+y+'" width="'+s+'" height="'+s+'" rx="'+(s*0.26*eyeRadiusFactor).toFixed(3)+'" fill="'+fillRef+'"/>';
+      shapes += '<rect x="'+(x+1)+'" y="'+(y+1)+'" width="'+(s-2)+'" height="'+(s-2)+'" rx="'+((s-2)*0.22*eyeRadiusFactor).toFixed(3)+'" fill="'+opts.bg+'"/>';
+      shapes += '<rect x="'+(x+2)+'" y="'+(y+2)+'" width="'+(s-4)+'" height="'+(s-4)+'" rx="'+((s-4)*0.32*eyeRadiusFactor).toFixed(3)+'" fill="'+fillRef+'"/>';
     });
     var logo = '';
     if (opts.logoDataUrl){
@@ -741,7 +746,7 @@ QRCode={CorrectLevel:QRErrorCorrectLevel,_Model:QRCodeModel,_getTypeNumber:_getT
     }
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+total+' '+fullUnits.toFixed(3)+'" width="'+opts.size+'" height="'+(opts.size*fullUnits/total).toFixed(2)+'">'+
       defs +
-      '<rect width="'+total+'" height="'+fullUnits.toFixed(3)+'" rx="'+(total*0.05).toFixed(2)+'" fill="'+opts.bg+'"/>'+
+      '<rect width="'+total+'" height="'+fullUnits.toFixed(3)+'" rx="'+(isSquare?0:total*0.05).toFixed(2)+'" fill="'+opts.bg+'"/>'+
       shapes + logo + tag + '</svg>';
   }
 
